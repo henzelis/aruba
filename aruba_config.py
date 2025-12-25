@@ -22,7 +22,7 @@ try:
     vsx.get()
     print(f"VSX Device Role: {vsx.device_role}")
     print(f"VSX System MAC: {vsx.system_mac}")
-    print(f"VSX ISL: {vsx.inter_switch_link}")
+    print(f"VSX ISL: {vsx.isl_port}")
 except Exception as e:
     print(f"VSX помилка: {e}")
     print("VSX НЕ налаштований - не можна використовувати vsx_sync!")
@@ -38,7 +38,6 @@ try:
     vlan101.description = "VLAN101 TEST VLAN101"
     vlan101.vsx_sync = ['all_attributes_and_dependents']
     vlan101.apply()
-    print("VLAN створено без vsx_sync")
     # switch.vlan.description = "VLAN100 by PyAOS-CX"
     # vsx = switch.vsx()
     # vsx.device_role = device_role
