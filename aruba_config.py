@@ -81,4 +81,4 @@ if __name__ == "__main__":
         s = Session(switch['switch_ip'], version)
         s.open("admin", "admin")
         create_vsx(s, isl_lag_id=switch['isl_lag_id'], isl_ports=switch['isl_ports'])
-
+        s.close()
