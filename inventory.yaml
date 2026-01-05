@@ -1,0 +1,8 @@
+devices:
+  - host: 192.168.109.10
+    role: primary
+    site: lab
+
+  - host: 192.168.109.11
+    role: secondary
+    site: lab

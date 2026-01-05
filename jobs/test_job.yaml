@@ -1,0 +1,34 @@
+steps:
+  - task: vlan
+    params:
+      id: 100
+      name: USERS
+      description: User VLAN
+
+  - task: svi
+    params:
+      id: 100
+      ip_address: 10.10.100.1/24
+      vrf: default
+
+  - task: active_gateway
+    params:
+      vlan_id: 100
+      virtual_ip: 10.10.100.254
+      mac: 02:01:00:00:01:00
+
+  - task: lag
+    params:
+      lag_id: 10
+      ports:
+        - 1/1/1
+        - 1/1/2
+      trunk: true
+      allowed_vlans: "100,200"
+      multi_chassis: true
+
+  - task: trunk
+    params:
+      interface: lag10
+      allowed_vlans: "100,200"
+      native_vlan: 1

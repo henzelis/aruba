@@ -21,6 +21,35 @@ VSX_PARAM = [
     },
 ]
 
+VLANS_TO_CREATE = [
+    {"id": 10, "name": "VLAN_USERS", "description": "User VLAN", "vsx": True},
+    {"id": 20, "name": "VLAN_SERVERS", "description": "Server VLAN", "vsx": True},
+    {"id": 30, "name": "VLAN_GUESTS", "description": "Guest VLAN", "vsx": True},
+    {"id": 40, "name": "VLAN_MANAGEMENT", "description": "Management VLAN", "vsx": True},
+]
+
+SVI = {
+    "sw1": {
+        "mgmt_ip": "192.168.109.10",
+        "svi": [
+            {"id": "10",
+             "ip": "10.10.10.2/24",
+             "active_gateway": True,
+             "virtual_ip": "10.10.10.1",
+             "mac": "12:01:00:00:01:00"},
+        ]
+    },
+    "sw2": {
+        "mgmt_ip": "192.168.109.11",
+        "svi": [
+            {"id": "10", "ip": "10.10.10.3/24",
+             "active_gateway": True,
+             "virtual_ip": "10.10.10.1",
+             "mac": "12:01:00:00:01:00"},
+        ]
+    }
+}
+
 
 class ArubaCXDevice:
     def __init__(self, host, username, password):
@@ -73,6 +102,7 @@ class ArubaCXDevice:
         cmds = [
             f"interface vlan {vlan_id}",
             f"ip address {ip_address}",
+            "no shutdown"
         ]
 
         if vrf:
@@ -83,15 +113,16 @@ class ArubaCXDevice:
     def configure_active_gateway(self, vlan_id, virtual_ip, mac=None):
         cmds = [
             f"interface vlan {vlan_id}",
+            "vsx-sync active-gateways",
             f"active-gateway ip {virtual_ip}",
         ]
 
         if mac:
-            cmds.append(f"active-gateway mac {mac}")
+            cmds.append(f"active-gateway ip mac {mac}")
 
         return self.send_config(cmds)
 
-    def create_lag(self, lag_id, ports, mode="active", trunk=True, allowed_vlans=None, multi_chassis=False):
+    def configure_lag(self, lag_id, ports, mode="active", trunk=True, allowed_vlans=None, multi_chassis=False):
         if multi_chassis:
             cmds = [
                 f"interface lag {lag_id} multi-chassis",
@@ -115,6 +146,7 @@ class ArubaCXDevice:
         for port in ports:
             cmds.append(f"interface {port}")
             cmds.append(f"lag {lag_id}")
+            cmds.append("no shutdown")
 
         return self.send_config(cmds)
 
@@ -157,3 +189,16 @@ if __name__ == "__main__":
                 keepalive_src=sw["src"],
                 keepalive_peer=sw["peer"],
             )
+    for sw, sw_data in SVI.items():
+        mgmt_ip = sw_data["mgmt_ip"]
+        with ArubaCXDevice(mgmt_ip, "admin", "admin") as dev:
+            for svi in sw_data["svi"]:
+                vlan_id = svi["id"]
+                vlan_ip = svi["ip"]
+                dev.configure_svi(vlan_id, vlan_ip)
+                print(f"{sw} ({mgmt_ip})): VLAN {vlan_id} -> {vlan_ip}")
+                if svi["active_gateway"]:
+                    virtual_ip = svi["virtual_ip"]
+                    mac = svi["mac"]
+                    dev.configure_active_gateway(vlan_id, virtual_ip, mac)
+                    print(f"{sw}: VLAN {vlan_id} -> Active Gateway ({virtual_ip}, {mac})")
