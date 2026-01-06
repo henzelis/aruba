@@ -1,4 +1,4 @@
-def vlan_task(device, params):
+def vlan_task(device, params, context):
     device.configure_vlan(
         vlan_id=params["id"],
         name=params.get("name"),
@@ -6,15 +6,20 @@ def vlan_task(device, params):
     )
 
 
-def svi_task(device,  params):
+def svi_task(device,  params, context):
+    vlan = params["vlan"]
+    device_vars = context["device_vars"]
+    svi_data = device_vars.get("svi", {}).get(vlan)
+    if not svi_data:
+        return
     device.configure_svi(
-        vlan_id=params["id"],
-        ip_address=params["ip_address"],
-        vrf=params.get("vrf")
+        vlan_id=vlan,
+        ip_address=svi_data["ip"],
+        vrf=svi_data.get("vrf")
     )
 
 
-def trunk_task(device, params):
+def trunk_task(device, params, context):
     device.configure_trunk(
         interface=params["interface"],
         allowed_vlans=params.get("allowed_vlans"),
@@ -22,7 +27,7 @@ def trunk_task(device, params):
     )
 
 
-def active_gateway_task(device, params):
+def active_gateway_task(device, params, context):
     device.configure_active_gateway(
         vlan_id=params["vlan_id"],
         virtual_ip=params["virtual_ip"],
@@ -30,8 +35,8 @@ def active_gateway_task(device, params):
     )
 
 
-def lag_task(device, params):
-    device.create_lag(
+def lag_task(device, params, context):
+    device.configure_lag(
         lag_id=params["lag_id"],
         ports=params["ports"],
         mode=params.get("mode", "active"),
@@ -41,7 +46,7 @@ def lag_task(device, params):
     )
 
 
-def vsx_task(device, params):
+def vsx_task(device, params, context):
     device.configure_vsx(
         role=params["role"],
         system_mac=params["system_mac"],

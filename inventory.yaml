@@ -1,8 +1,15 @@
 devices:
   - host: 192.168.109.10
     role: primary
-    site: lab
+    svi:
+      100:
+        ip: 10.10.100.2/24
+        vrf: default
 
   - host: 192.168.109.11
     role: secondary
-    site: lab
+    svi:
+      100:
+        ip: 10.10.100.3/24
+        vrf: default
+
