@@ -1,0 +1,36 @@
+name: Aruba CX basic access configuration
+fail_fast: false
+
+steps:
+  - task: vlan
+    when: vlan
+    loop:
+      - { id: 100, name: USERS, description: User VLAN}
+      - { id: 101, name: WIFI, description: WIFI VLAN}
+
+  - task: svi
+    when: svi
+    loop:
+      - id: 100
+
+  - task: active_gateway
+    params:
+      vlan_id: 100
+      virtual_ip: 10.10.100.254
+      mac: 02:01:00:00:01:00
+
+  - task: lag
+    params:
+      lag_id: 10
+      ports:
+        - 1/1/2
+        - 1/1/3
+      trunk: true
+      allowed_vlans: "100,200"
+      multi_chassis: true
+
+  - task: trunk
+    params:
+      interface: lag10
+      allowed_vlans: "100,200"
+      native_vlan: 1

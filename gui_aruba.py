@@ -38,7 +38,7 @@ def run_vsx():
                 dev.create_lag(sw["isl"], sw["ports"], multi_chassis=True)
 
                 output.insert(tk.END, "Configuring VSX...\n")
-                dev.configure_vsx(
+                dev.build_vsx(
                     role=sw["role"],
                     system_mac=sw["mac"],
                     isl_lag=sw["isl"],

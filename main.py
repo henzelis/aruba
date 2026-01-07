@@ -9,7 +9,7 @@ def load_yaml(path):
 
 def main():
     inventory = load_yaml("inventory.yaml")
-    job = load_yaml("jobs/test_job.yaml")
+    job = load_yaml("jobs/job_2.yaml")
 
     devices = inventory["devices"]
     steps = job["steps"]
@@ -19,7 +19,7 @@ def main():
         "password": "admin",
     }
 
-    run_job(devices, steps, credentials)
+    run_job(devices, job, credentials)
 
 
 if __name__ == "__main__":

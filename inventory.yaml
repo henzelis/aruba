@@ -5,6 +5,7 @@ devices:
       100:
         ip: 10.10.100.2/24
         vrf: default
+    vlan: True
 
   - host: 192.168.109.11
     role: secondary
@@ -12,4 +13,5 @@ devices:
       100:
         ip: 10.10.100.3/24
         vrf: default
+    vlan: True
 
