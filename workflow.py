@@ -13,15 +13,46 @@ def should_run(step, context):
 
 
 def extend_loop(step, context):
+    device_vars = context["device_vars"]
+
+    # 🔹 case 1: loop + when + inventory dict  → MERGE
+    if "loop" in step and "when" in step:
+        key = step["when"]
+        inventory_value = device_vars.get(key)
+
+        if isinstance(inventory_value, dict):
+            items = []
+            for loop_item in step["loop"]:
+                item_id = loop_item.get("id")
+                if item_id not in inventory_value:
+                    continue  # або raise, якщо хочеш strict
+
+                merged = {"id": item_id}
+                merged.update(inventory_value[item_id])
+                merged.update(loop_item)  # loop може override-ити
+                items.append(merged)
+
+            return items
+
+    # 🔹 case 2: явний loop без inventory
     if "loop" in step:
         return step["loop"]
 
+    # 🔹 case 3: inventory list або dict без loop
     if "when" in step:
         key = step["when"]
-        value = context["device_vars"].get(key)
+        value = device_vars.get(key)
+
         if isinstance(value, list):
             return value
 
+        if isinstance(value, dict):
+            return [
+                {"id": k, **v}
+                for k, v in value.items()
+            ]
+
+    # 🔹 fallback
     return [step.get("params", {})]
 
 
@@ -41,7 +72,7 @@ def run_job(devices, job, credentials, logger=print):
             credentials["password"]
         ) as device:
             steps = job["steps"]
-            for step in job:
+            for step in steps:
                 if not should_run(step, context):
                     context["logger"](f"SKIPPED {step['task']} on {device.host}")
                     continue

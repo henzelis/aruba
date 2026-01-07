@@ -12,7 +12,7 @@ def vlan_task(device, params, context):
 
 
 def svi_task(device,  params, context):
-    vlan = params["vlan"]
+    vlan = params["id"]
     device_vars = context["device_vars"]
     svi_data = device_vars.get("svi", {}).get(vlan)
     if not svi_data:
